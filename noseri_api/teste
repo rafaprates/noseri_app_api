@@ -1,0 +1,47 @@
+class KwhList(APIView):
+
+    def get(self, request, user):
+        """
+        Lista os consumos (kwh) contidos no banco, através do Model (tabela) Kwh.
+        Pode ser filtrado com os parametros, tsInitial, tsFinal, load.
+        """
+
+        # Busca o usuário passado através da URL
+        user = User.objects.get(username=user)
+
+        # Busca na URL o parametro load e busca o objeto correspondente
+        load = request.GET.__getitem__('load').lower()
+        load = Load.objects.get(load=load)
+
+        # Retorna todas as linhas que contem o usuário especificado no Model (tabela) Kwh
+        querySet = Kwh.objects.filter(user__exact = user.id).filter(load__exact = load.id)
+
+        # Filtro para Carga
+        querySet = querySet.filter(load__exact = load.id)
+
+        # Filtro para o tsStart, tsEnd
+        #start_date = request.GET.__getitem__('tsStart')
+        #end_date = request.GET.__getitem__('tsEnd')
+        #querySet = querySet.filter(pub_date__range=(start_date, end_date))
+
+        serializer = KwhSerializer(querySet, many=True)
+        return Response(serializer.data)
+
+    #def post(self, request, user):
+
+        #serializer = KwhSerializer(data=request.data)
+        #if serializer.is_valid():
+        #    serializer.save()
+        #    return Response(serializer.data, status=status.HTTP_201_CREATED)
+        #return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        #user = User.objects.get(username=user)
+        #load = request.GET.__getitem__('load').lower()
+        #load = Load.objects.get(load=load)
+        #kwh = request.GET.__getitem__('kwh')
+            
+        #Kwh.objects.create(user = user, load = load, kwh = kwh)
+        #serializer = ConsumptionSerializer(created_object)
+        #return Response(status = status.HTTP_201_CREATED)
+
+
+#def Kwh
