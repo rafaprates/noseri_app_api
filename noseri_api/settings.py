@@ -1,3 +1,5 @@
+import django_heroku
+
 """
 Django settings for noseri_api project.
 
@@ -25,7 +27,7 @@ SECRET_KEY = 'django-insecure-os%0hvm@6#^zu2m0*8vk4klwnd&db5)g7j$8#fm_ol07fdpj#l
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["127.0.0.1", "noseri-api.herokuapp.com"]
 
 
 # Application definition
@@ -125,3 +127,6 @@ STATIC_URL = '/static/'
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Activate Django-Heroku.
+django_heroku.settings(locals())

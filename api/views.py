@@ -1,5 +1,6 @@
 from django.contrib.auth.models import User
 from django.http import Http404
+from django.http.response import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 
 
@@ -15,6 +16,8 @@ from rest_framework.response import Response
 from api.serializers import KwhSerializer
 from api.models import Load, Kwh
 
+def api_welcome_page(request):
+    return HttpResponse("<h1> Bem-vindo(a) - NOSERI api </h1>")
 
 
 @api_view(['GET', 'POST'])
