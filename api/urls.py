@@ -9,6 +9,7 @@ urlpatterns = [
     #path('<str:user>/kwh', views.KwhList.as_view()),
     path('<str:user>/kwh', views.ListAndCreateKwh),
     path('', views.api_welcome_page),
+    path('teste', views.ListUsers),
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)

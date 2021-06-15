@@ -2,4 +2,3 @@ django
 djangorestframework
 django-heroku
 gunicorn
-psycopg2
