@@ -28,6 +28,17 @@ def ListAndCreateKwh(request, user):
         # Busca o usuário passado através da URL
         user = User.objects.get(username=user)
 
+        #TODO: checar se load foi passado.
+        if not request.GET.__contains__("load"):
+            print('*****************')
+            print('entrou')
+            querySet = Kwh.objects.filter(user__exact = user.id)
+            print(querySet)
+            serializer = KwhSerializer(querySet, many=True)
+            return Response(serializer.data)
+        
+        print("++++++++++++++++++++++++++++")
+
         # Busca na URL o parametro load e busca o objeto correspondente
         load = request.GET.__getitem__('load').lower()
         load = Load.objects.get(load=load)
