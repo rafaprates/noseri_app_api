@@ -4,14 +4,14 @@ from django.http.response import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 
 
-
 from rest_framework.views import APIView
+from rest_framework.response import Response
 from rest_framework import status
 from rest_framework import generics
 from rest_framework.generics import ListCreateAPIView
 
 from rest_framework.decorators import api_view
-from rest_framework.response import Response
+
 
 from api.serializers import KwhSerializer
 from api.models import Load, Kwh
@@ -20,8 +20,16 @@ def api_welcome_page(request):
     return HttpResponse("<h1> Bem-vindo(a) - NOSERI api </h1>")
 
 
+# List GET and POST methods as accepted for this route.
 @api_view(['GET', 'POST'])
 def ListAndCreateKwh(request, user):
+    """
+    Lists and creates rows of Kwh table for spcified user. 
+    It allows filtering. The filters are passed by the url. The filters are:
+        * String <load> for a specific load;
+        * String <time_delta> for a specific period of time.
+    """
+    
     user = User.objects.get(username=user)
 
     if request.method == 'GET':
@@ -30,14 +38,11 @@ def ListAndCreateKwh(request, user):
 
         #TODO: checar se load foi passado.
         if not request.GET.__contains__("load"):
-            print('*****************')
-            print('entrou')
             querySet = Kwh.objects.filter(user__exact = user.id)
             print(querySet)
             serializer = KwhSerializer(querySet, many=True)
             return Response(serializer.data)
         
-        print("++++++++++++++++++++++++++++")
 
         # Busca na URL o parametro load e busca o objeto correspondente
         load = request.GET.__getitem__('load').lower()
