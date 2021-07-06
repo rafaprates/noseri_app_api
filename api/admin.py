@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Load, Kwh, BillingInfo
+from .models import Load, Kwh, BillingInfo, Tax
 
 # Register your models here.
 # Os modelos aqui registrados aparecerão em /admin
@@ -7,5 +7,6 @@ from .models import Load, Kwh, BillingInfo
 admin.site.register(Load)
 admin.site.register(Kwh)
 admin.site.register(BillingInfo)
+admin.site.register(Tax)
 
 

@@ -63,3 +63,14 @@ class BillingInfo(models.Model):
 
     def __str__(self):
         return f"Cliente: {self.user}"
+
+
+class Tax(models.Model):
+    """
+    Tabela responsável por armazenar os valores dos impostos.
+    """
+
+    user = models.ForeignKey(User, unique=True, blank=False, on_delete=models.CASCADE, default=None)
+    icms = models.FloatField()
+    pis = models.FloatField()
+    confins = models.FloatField()
