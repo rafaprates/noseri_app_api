@@ -1,3 +1,4 @@
+import datetime
 from django.contrib.auth.models import User
 from django.http import Http404
 from django.http.response import HttpResponse
@@ -36,32 +37,40 @@ def ListAndCreateKwh(request, user):
         # Busca o usuário passado através da URL
         user = User.objects.get(username=user)
 
-        #TODO: checar se load foi passado.
-        if not request.GET.__contains__("load"):
-            querySet = Kwh.objects.filter(user__exact = user.id)
-            print(querySet)
-            serializer = KwhSerializer(querySet, many=True)
-            return Response(serializer.data)
-        
+        querySet = Kwh.objects.all()
 
-        # Busca na URL o parametro load e busca o objeto correspondente
-        load = request.GET.__getitem__('load').lower()
-        load = Load.objects.get(load=load)
+        if request.GET.__contains__("load"):
+            load = request.GET.__getitem__("load").lower()
+            load = Load.objects.get(load=load)
+            querySet = querySet.filter(load__exact=load.id)
 
-        # Retorna todas as linhas que contem o usuário especificado no Model (tabela) Kwh
-        # E dessas linhas retorna apenas aquelas que contenha a carga especificada por load
-        querySet = Kwh.objects.filter(user__exact = user.id).filter(load__exact = load.id)
+        if request.GET.__contains__("ti"):
+            timeInit = request.GET.__getitem__("ti")
+            date = timeInit.split("-")
+            year = int(date[0])
+            month = int(date[1])
+            day = int(date[2])
+            querySet = querySet.filter(timestamp__date__gte=datetime.date(year, month, day))
 
-        # Filtro para o tsStart, tsEnd
-        #start_date = request.GET.__getitem__('tsStart')
-        #end_date = request.GET.__getitem__('tsEnd')
-        #querySet = querySet.filter(pub_date__range=(start_date, end_date))
+        if request.GET.__contains__("tf"):
+            timeFinal = request.GET.__getitem__("tf")
+            date = timeFinal.split("-")
+            year = int(date[0])
+            month = int(date[1])
+            day = int(date[2])
+            querySet = querySet.filter(timestamp__date__lte=datetime.date(year, month, day))
 
         serializer = KwhSerializer(querySet, many=True)
         return Response(serializer.data)
+      
 
     if request.method == 'POST':
         load = Load.objects.get(load=request.POST.__getitem__('load').lower())
         kwh = request.POST.__getitem__('kwh')
         Kwh.objects.create(user=user, load=load, kwh=kwh)
         return Response(status.HTTP_201_CREATED)
+
+
+@api_view(['GET', 'POST'])
+def ListAndCreateLoad(request, user):
+    pass
