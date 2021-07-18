@@ -72,5 +72,9 @@ def ListAndCreateKwh(request, user):
 
 
 @api_view(['GET', 'POST'])
-def ListAndCreateLoad(request, user):
-    pass
+def ListAndCreateLoad(request):
+
+    if request.method == 'POST':
+        load = request.POST.__getitem__('load').lower()
+        Load.objects.create(load=load)
+        return Response(status.HTTP_201_CREATED)

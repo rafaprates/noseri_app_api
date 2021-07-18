@@ -8,6 +8,7 @@ urlpatterns = [
     #api/username/kwh &load=geladeira &from=DataInicial &until=DataFinal
     #path('<str:user>/kwh', views.KwhList.as_view()),
     path('<str:user>/kwh', views.ListAndCreateKwh),
+    path('load', views.ListAndCreateLoad),
     path('', views.api_welcome_page),
 ]
 
