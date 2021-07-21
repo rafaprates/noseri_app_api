@@ -68,7 +68,8 @@ def ListAndCreateKwh(request, user):
                 querySet = querySet.filter(timestamp__date__lte=datetime.date(today.year, today.month, today.day))
             elif period == "week":
                 this_week = datetime.date.today()
-                querySet = querySet.filter(timestamp__date__gte=datetime.date(this_week.year, this_week.month, this_week.day))
+                week_day = this_week.weekday()
+                querySet = querySet.filter(timestamp__date__gte=datetime.date(this_week.year, this_week.month, this_week.day  - week_day))
                 querySet = querySet.filter(timestamp__date__lte=datetime.date(this_week.year, this_week.month, this_week.day))
             else:
                 pass
