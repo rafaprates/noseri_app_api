@@ -46,7 +46,7 @@ def ListAndCreateKwh(request, user):
 
         if request.GET.__contains__("ti"):
             timeInit = request.GET.__getitem__("ti")
-            date = timeInit.split("/")
+            date = timeInit.split("-")
             year = int(date[0])
             month = int(date[1])
             day = int(date[2])
@@ -54,7 +54,7 @@ def ListAndCreateKwh(request, user):
 
         if request.GET.__contains__("tf"):
             timeFinal = request.GET.__getitem__("tf")
-            date = timeFinal.split("/")
+            date = timeFinal.split("-")
             year = int(date[0])
             month = int(date[1])
             day = int(date[2])
