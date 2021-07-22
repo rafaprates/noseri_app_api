@@ -62,17 +62,22 @@ def ListAndCreateKwh(request, user):
 
         if request.GET.__contains__("fixedPeriod"):
             period = request.GET.__getitem__("fixedPeriod")
+
+            today = datetime.date.today()
+
             if period == "day":
-                today = datetime.date.today()
-                querySet = querySet.filter(timestamp__date__gte=datetime.date(today.year, today.month, today.day))
-                querySet = querySet.filter(timestamp__date__lte=datetime.date(today.year, today.month, today.day))
+                querySet = querySet.filter(
+                    timestamp__day=today.day
+                )
             elif period == "week":
-                this_week = datetime.date.today()
-                week_day = this_week.weekday()
-                querySet = querySet.filter(timestamp__date__gte=datetime.date(this_week.year, this_week.month, this_week.day  - week_day))
-                querySet = querySet.filter(timestamp__date__lte=datetime.date(this_week.year, this_week.month, this_week.day))
-            else:
-                this_month = datetime.date.month()
+                querySet = querySet.filter(
+                    timestamp__week=today.isocalendar().week
+                    )
+            elif period == "month":
+                print(today.month)
+                querySet = querySet.filter(
+                    timestamp__month=today.month
+                )
 
         serializer = KwhSerializer(querySet, many=True)
         return Response(serializer.data)
