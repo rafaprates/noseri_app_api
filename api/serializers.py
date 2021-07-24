@@ -12,3 +12,13 @@ class KwhSerializer(serializers.ModelSerializer):
     class Meta:
         model = Kwh
         fields = ['user', 'load', 'kwh', 'timestamp',]
+
+
+class ReaisSerializer(serializers.Serializer):
+    load = serializers.CharField()
+    kwh = serializers.FloatField()
+
+
+class TotalKwhSerializer(serializers.Serializer):
+    kwh_sum = serializers.FloatField()
+    data = serializers.CharField()
