@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from datetime import datetime, date, time, timezone
 
 # Esses modelos descrevem tabelas no banco de dados.
 
@@ -24,8 +25,42 @@ class Kwh(models.Model):
     timestamp = models.DateTimeField(auto_now_add = True)
 
     def __str__(self):
-        return f'User: {self.user} | Carga: {self.load} | Kwh: {self.kwh}'
+        return f'user: {self.user}, carga: {self.load}, kWh: {self.kwh}, dia: {self.timestamp.day}'
 
+    def emReais(self):
+        self.kwh = self.kwh * 0.85
+        return self
+
+    def formatTsAsDate(self):
+        ts = str(self.timestamp).split(" ")
+        ts = ts[0].split("-")
+        year = ts[0]
+        month = ts [1]
+        day = ts[2]
+        self.timestamp = f"{day}/{month}/{year}"
+
+    def formatTsAsHour(self):
+        ts = str(self.timestamp).split(" ")
+        ts = ts[1].split(":")
+        self.timestamp = ts[0] + "h"
+        return self
+
+    def getTotalPerHour(self):
+        pass
+ 
+class KwhTotal(models.Model):
+    kwh_sum = models.FloatField(default=0.0)
+    data = models.CharField(max_length=32)
+
+    def __str__(self):
+        return str(self.kwh_sum) + " " + self.data
+
+class Total_by_Load(models.Model):
+    load_name = models.CharField(max_length=32)
+    kwh_sum = models.FloatField()
+
+    def __str__(self):
+        return f"{self.load_name} total: {self.kwh_sum}"
 
 class BillingInfo(models.Model):
     """
