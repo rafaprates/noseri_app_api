@@ -22,3 +22,8 @@ class ReaisSerializer(serializers.Serializer):
 class TotalKwhSerializer(serializers.Serializer):
     kwh_sum = serializers.FloatField()
     data = serializers.CharField()
+
+class TotalByLoadSerializer(serializers.Serializer):
+    load_name = serializers.CharField()
+    kwh_sum = serializers.FloatField()
+
