@@ -171,7 +171,7 @@ def por_carga_em_um_mes(querySet):
     Returns:
         
     """
-    loads = Load.objects.all()
+    loads = Load.objects.all()[0:3]
     totals_by_load = []
     for load in loads:
         print(load)

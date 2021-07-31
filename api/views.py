@@ -82,6 +82,15 @@ def ListAndCreateKwh(request, user):
                 tf = request.GET.__getitem__("tf")
                 aggregated_values = aggregators.por_dia_e_mes_e_ano(querySet, ti, tf)
 
+            if aggregator == "by_total_this_month":
+                pass
+
+            if aggregator == "by_total_this_week":
+                pass
+
+            if aggregator == "by_total_today":
+                pass
+
             if aggregator == "by_load_in_a_month":
                 aggregated_values = aggregators.por_carga_em_um_mes(querySet)
                 serializer = TotalByLoadSerializer(aggregated_values, many=True)
