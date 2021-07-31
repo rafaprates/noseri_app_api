@@ -8,8 +8,8 @@ from django.http.response import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from api import serializers
 
-
-
+#from .filters import *
+from . import filters
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -46,49 +46,54 @@ def ListAndCreateKwh(request, user):
         if request.GET.__contains__("debug"):
             pass
             
-
+        # ---> Início dos filtros
         if request.GET.__contains__("load"):
-            # Filtra o conjunto de dados, retirando todas as instâncias
-            # em que load não ocorre.
             load = request.GET.__getitem__("load").lower()
-            load = Load.objects.get(load=load)
-            querySet = querySet.filter(load__exact=load.id)
-
+            querySet = filters.filter_by_load(querySet, load)
 
         if request.GET.__contains__("ti"):
-            # Filtra o conjunto de dados, retornando um subconjunto
-            # onde, em todas as instâncias, timestamp >= ti
-            inferior_limit_date = request.GET.__getitem__("ti")
-            print(inferior_limit_date)
-            date = inferior_limit_date.split("-")
-            init_year, init_month, init_day = int(date[0]), int(date[1]), int(date[2])
-            querySet = querySet.filter(timestamp__date__gte=datetime.date(init_year, init_month, init_day))
-
+            ti = request.GET.__getitem__("ti")
+            querySet = filters.filter_by_time_gt(querySet, ti)
 
         if request.GET.__contains__("tf"):
-            # Filtra o conjunto de dados, retornando um subconjunto
-            # onde, em todas as instâncias, timestamp <= tf
-            superior_date_limit = request.GET.__getitem__("tf")
-            date = superior_date_limit.split("-")
-            final_year, final_month, final_day = int(date[0]), int(date[1]), int(date[2])
-            querySet = querySet.filter(timestamp__date__lte=datetime.date(final_year, final_month, final_day))
+            tf = request.GET.__getitem__("tf")
+            querySet = filters.filter_by_time_lt(querySet, tf)
+        # <--- Fim dos filtros
 
-        if request.GET.__contains__("unidade"):
-            print("\n\nANTES: querySet\n", querySet, "\n\n")
-            unidade = request.GET.__getitem__("unidade")
-            print("EM REAIS")
-            if unidade == "reais":
-                for q in querySet:
-                    print(q)
-                    q = q.emReais()
-                    print(q)
+        # ---> Início dos agregadores
+        if request.GET.__contains__("aggregator"):
+            aggregator = request.GET.__getitem__("aggregator")
+            serializer = []
 
-            print("\n\nDEPOIS querySet\n", querySet, "\n\n")
+            if aggregator == "by_days_in_a_month":
+                month = today.month
+                aggregated_values = aggregators.por_dias_de_um_mes(querySet, month)
+                
+            if aggregator == "by_days_in_a_week":
+                week = today.isocalendar().week
+                aggregated_values = aggregators.por_dias_de_uma_semana(querySet, week)
 
- 
+            if aggregator == "by_hours_in_a_day":
+                day = today.day
+                aggregated_values = aggregators.por_hora_de_um_dia(querySet, day)
+
+            if aggregator == "by_day_month_year":
+                ti = request.GET.__getitem__("ti")
+                tf = request.GET.__getitem__("tf")
+                aggregated_values = aggregators.por_dia_e_mes_e_ano(querySet, ti, tf)
+
+            if aggregator == "by_load_in_a_month":
+                aggregated_values = aggregators.por_carga_em_um_mes(querySet)
+                serializer = TotalByLoadSerializer(aggregated_values, many=True)
+                return Response(serializer.data)
+
+            serializer = TotalKwhSerializer(aggregated_values, many=True)
+            return Response(serializer.data)
+        # <---  Fim dos agregadores
+
+
+        # Início dos agregadores
         if request.GET.__contains__("fixedPeriod"):
-            # Retorna um subconjunto filtrado por um período de tempo
-            # Os períodos de tempos suportados são: day, week & month.
             period = request.GET.__getitem__("fixedPeriod")
 
             if period == "day":
@@ -98,18 +103,18 @@ def ListAndCreateKwh(request, user):
 
             elif period == "week":
                 week = today.isocalendar().week
-                print("\n\nweek querySet\n", querySet, "\n\n")
-                serializer = aggregators.por_dia_da_semana(querySet, week)
-                print(serializer.data)
+                serializer = aggregators.por_dias_de_uma_semana(querySet, week)
                 return Response(serializer.data)
 
             elif period == "month":
-                serializer = aggregators.por_dia_do_mes(querySet, today.month)
+                serializer = aggregators.por_dias_de_um_mes(querySet, today.month)
                 return Response(serializer.data)
 
             elif period == "undefined":
-                #ti = datetime.date(init_year, init_month, init_day)
-                #tf = datetime.date(final_year, final_month, final_day)
+                date = ti.split("-")
+                init_year, init_month, init_day = int(date[0]), int(date[1]), int(date[2])
+                date = tf.split("-")
+                final_year, final_month, final_day = int(date[0]), int(date[1]), int(date[2])
                 start_dt = datetime.date(init_year, init_month, init_day)
                 end_dt =  datetime.date(final_year, final_month, final_day)
 
@@ -131,7 +136,6 @@ def ListAndCreateKwh(request, user):
 
                     total_kwh = KwhTotal(kwh_sum=qs["kwh__sum"], data=f"{dt.day}/{dt.month}/{dt.year}")
                     if total_kwh.kwh_sum != None:
-                        #total_kwh.kwh_sum = 0.0
                         foo.append(total_kwh)
                 serializer = TotalKwhSerializer(foo, many=True)
                 return Response(serializer.data)

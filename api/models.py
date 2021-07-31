@@ -53,7 +53,7 @@ class KwhTotal(models.Model):
     data = models.CharField(max_length=32)
 
     def __str__(self):
-        return str(self.kwh_sum) + " " + self.data
+        return "kwh_sum: " + str(self.kwh_sum) + " " + "data: " + self.data
 
 class Total_by_Load(models.Model):
     load_name = models.CharField(max_length=32)
