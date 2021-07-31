@@ -7,3 +7,9 @@ def get_date_range(date1, date2):
         yield date1 + timedelta(n)
 
 
+def calcular_kwh_em_reais(kwh):
+    TE = 0.68350
+    em_reais = kwh * TE
+    return round(em_reais, 2)
+
+

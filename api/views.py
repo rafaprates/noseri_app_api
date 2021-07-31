@@ -28,6 +28,8 @@ from .utils import get_date_range
 from api.serializers import KwhSerializer, ReaisSerializer, TotalByLoadSerializer, TotalKwhSerializer
 from api.models import KwhTotal, Load, Kwh, Total_by_Load
 
+from api import utils
+
 def api_welcome_page(request):
     return HttpResponse("<h1> Bem-vindo(a) - NOSERI api </h1>")
 
@@ -96,58 +98,16 @@ def ListAndCreateKwh(request, user):
                 serializer = TotalByLoadSerializer(aggregated_values, many=True)
                 return Response(serializer.data)
 
+            # Antes de retornar, aplica-se, se solicitado, o 
+            # modificador de colunas que calcula o preço da tarifa
+            unidade = request.GET.__getitem__("unidade")
+            if unidade == "reais":
+                for val in aggregated_values:
+                    val.kwh_sum = utils.calcular_kwh_em_reais(val.kwh_sum)
+
             serializer = TotalKwhSerializer(aggregated_values, many=True)
             return Response(serializer.data)
         # <---  Fim dos agregadores
-
-
-        # Início dos agregadores
-        if request.GET.__contains__("fixedPeriod"):
-            period = request.GET.__getitem__("fixedPeriod")
-
-            if period == "day":
-                day = today.day
-                serializer = aggregators.por_hora_de_um_dia(querySet, day)
-                return Response(serializer.data) 
-
-            elif period == "week":
-                week = today.isocalendar().week
-                serializer = aggregators.por_dias_de_uma_semana(querySet, week)
-                return Response(serializer.data)
-
-            elif period == "month":
-                serializer = aggregators.por_dias_de_um_mes(querySet, today.month)
-                return Response(serializer.data)
-
-            elif period == "undefined":
-                date = ti.split("-")
-                init_year, init_month, init_day = int(date[0]), int(date[1]), int(date[2])
-                date = tf.split("-")
-                final_year, final_month, final_day = int(date[0]), int(date[1]), int(date[2])
-                start_dt = datetime.date(init_year, init_month, init_day)
-                end_dt =  datetime.date(final_year, final_month, final_day)
-
-                date_range = get_date_range(start_dt, end_dt)
-                #for dt in date_range:
-                    #print(dt.strftime("%Y-%m-%d"))
-
-                foo = []
-                for dt in date_range:
-                    qs = querySet.filter(
-                        timestamp__month=dt.month
-                    ).filter(
-                        timestamp__day=dt.day
-                    ).aggregate(
-                        Sum("kwh")
-                    )
-
-                    print(qs)
-
-                    total_kwh = KwhTotal(kwh_sum=qs["kwh__sum"], data=f"{dt.day}/{dt.month}/{dt.year}")
-                    if total_kwh.kwh_sum != None:
-                        foo.append(total_kwh)
-                serializer = TotalKwhSerializer(foo, many=True)
-                return Response(serializer.data)
 
 
         if request.GET.__contains__("type"):
