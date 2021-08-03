@@ -89,7 +89,7 @@ def por_dias_de_uma_semana(querySet, week):
     text_weekdays = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sab"]
     querySet = querySet.filter(timestamp__week=week)
     week_day = int(weekday(today.year, today.month, today.day))
-    first_day_of_week = today.day - week_day
+    first_day_of_week = today.day - week_day - 1
 
     aggregated_values = []
 
@@ -187,3 +187,21 @@ def por_carga_em_um_mes(querySet):
         
     return totals_by_load
 
+def por_total_este_mes(querySet, month):
+
+    print("######################################")
+    print("######################################")
+
+    qs = querySet.filter(
+        timestamp__month=month
+    ).aggregate(
+        Sum("kwh")
+    )
+
+    print("######################################")
+    print("######################################")
+    print("######################################")
+    print("######################################")
+    print(qs)
+    print()
+    return 

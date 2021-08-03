@@ -86,6 +86,9 @@ def ListAndCreateKwh(request, user):
 
             if aggregator == "by_total_this_month":
                 pass
+                month = today.month
+                aggregated_values = aggregators.por_total_este_mes(querySet, month)
+                
 
             if aggregator == "by_total_this_week":
                 pass
