@@ -32,11 +32,18 @@ class UserLoadAssociation(models.Model):
     This model associates Users and Loads. The idea is to keep track of
     what Loads a user want to keep track of. 
     """
-    user = models.ForeignKey(User, on_delete=models.CASCADE, null=False)
-    load = models.ForeignKey(Load, on_delete=models.CASCADE, null=False)
+    user = models.OneToOneField(
+        User, 
+        on_delete=models.CASCADE, 
+        #default=None, 
+        #blank=False,
+        parent_link=False,
+        #unique=True,
+    )
+    load = models.ManyToManyField(Load)
 
     def __str__(self):
-        return f"user: {self.user} carga: {self.load}"
+        return f"Cargas monitoradas para o usuário {str(self.user).upper}"
 
  
 class KwhTotal(models.Model):
