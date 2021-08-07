@@ -35,6 +35,9 @@ class UserLoadAssociation(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=False)
     load = models.ForeignKey(Load, on_delete=models.CASCADE, null=False)
 
+    def __str__(self):
+        return f"user: {self.user} carga: {self.load}"
+
  
 class KwhTotal(models.Model):
     kwh_sum = models.FloatField(default=0.0)
