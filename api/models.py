@@ -25,28 +25,16 @@ class Kwh(models.Model):
     timestamp = models.DateTimeField(auto_now_add = True)
 
     def __str__(self):
-        return f'user: {self.user}, carga: {self.load}, kWh: {self.kwh}, dia: {self.timestamp.day}'
+        return f'user: {self.user}, carga: {self.load}, kWh: {self.kwh}, dia: {self.timestamp}'
 
-    def emReais(self):
-        self.kwh = self.kwh * 0.85
-        return self
+class UserLoadAssociation(models.Model):
+    """
+    This model associates Users and Loads. The idea is to keep track of
+    what Loads a user want to keep track of. 
+    """
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=False)
+    load = models.ForeignKey(Load, on_delete=models.CASCADE, null=False)
 
-    def formatTsAsDate(self):
-        ts = str(self.timestamp).split(" ")
-        ts = ts[0].split("-")
-        year = ts[0]
-        month = ts [1]
-        day = ts[2]
-        self.timestamp = f"{day}/{month}/{year}"
-
-    def formatTsAsHour(self):
-        ts = str(self.timestamp).split(" ")
-        ts = ts[1].split(":")
-        self.timestamp = ts[0] + "h"
-        return self
-
-    def getTotalPerHour(self):
-        pass
  
 class KwhTotal(models.Model):
     kwh_sum = models.FloatField(default=0.0)
