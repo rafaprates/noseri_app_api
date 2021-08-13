@@ -12,7 +12,6 @@ class Load(models.Model):
     """Esta tabela guarda informações a respeito das cargas."""
     load = models.CharField(max_length = 32)
 
-
     def __str__(self):
         return self.load
     
@@ -26,6 +25,7 @@ class Kwh(models.Model):
 
     def __str__(self):
         return f'user: {self.user}, carga: {self.load}, kWh: {self.kwh}, dia: {self.timestamp}'
+
 
 class UserLoadAssociation(models.Model):
     """
@@ -43,7 +43,7 @@ class UserLoadAssociation(models.Model):
     load = models.ManyToManyField(Load)
 
     def __str__(self):
-        return f"Cargas monitoradas para o usuário {str(self.user).upper}"
+        return f"Cargas monitoradas para o usuário {self.user}"
 
  
 class KwhTotal(models.Model):

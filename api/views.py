@@ -25,8 +25,8 @@ from . import aggregators
 from .utils import get_date_range
 
 
-from api.serializers import KwhSerializer, ReaisSerializer, TotalByLoadSerializer, TotalKwhSerializer
-from api.models import KwhTotal, Load, Kwh, Total_by_Load
+from api.serializers import KwhSerializer, LoadSerializer, ReaisSerializer, TotalByLoadSerializer, TotalKwhSerializer
+from api.models import KwhTotal, Load, Kwh, Total_by_Load, UserLoadAssociation
 
 from api import utils
 
@@ -44,6 +44,16 @@ def ListAndCreateKwh(request, user):
     if request.method == 'GET':
         # Filtra por usuário. 
         querySet = Kwh.objects.all().filter(user=user.id)
+
+        # Filtra apenas as cargas registradas para o usuário
+        foo = UserLoadAssociation.objects.all().filter(user=user.id)
+        print()
+        print(foo)
+        print()
+
+        #qs = querySet.filter()
+        
+        
 
         if request.GET.__contains__("debug"):
             pass
@@ -153,6 +163,12 @@ def ListAndCreateKwh(request, user):
 
 @api_view(['GET', 'POST'])
 def ListAndCreateLoad(request):
+
+    if request.method == 'GET':
+        loads = Load.objects.all()
+        print(loads)
+        serializer = LoadSerializer(loads, many=True)
+        return Response(serializer.data)
 
     if request.method == 'POST':
         load = request.POST.__getitem__('load').lower()
