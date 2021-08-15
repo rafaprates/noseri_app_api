@@ -25,8 +25,8 @@ from . import aggregators
 from .utils import get_date_range
 
 
-from api.serializers import KwhSerializer, LoadSerializer, ReaisSerializer, TotalByLoadSerializer, TotalKwhSerializer
-from api.models import KwhTotal, Load, Kwh, Total_by_Load, UserLoadAssociation
+from api.serializers import KwhSerializer, LoadSerializer, ReaisSerializer, TotalByLoadSerializer, TotalKwhSerializer, TrackedLoadsSerializer
+from api.models import KwhTotal, Load, Kwh, Total_by_Load, TrackedLoads, UserLoadAssociation
 
 from api import utils
 
@@ -47,13 +47,6 @@ def ListAndCreateKwh(request, user):
 
         # Filtra apenas as cargas registradas para o usuário
         foo = UserLoadAssociation.objects.all().filter(user=user.id)
-        print()
-        print(foo)
-        print()
-
-        #qs = querySet.filter()
-        
-        
 
         if request.GET.__contains__("debug"):
             pass
@@ -95,10 +88,11 @@ def ListAndCreateKwh(request, user):
                 aggregated_values = aggregators.por_dia_e_mes_e_ano(querySet, ti, tf)
 
             if aggregator == "by_total_this_month":
-                pass
                 month = today.month
                 aggregated_values = aggregators.por_total_este_mes(querySet, month)
-                
+
+            if aggregator == "total_this_month":
+                pass
 
             if aggregator == "by_total_this_week":
                 pass
@@ -174,3 +168,59 @@ def ListAndCreateLoad(request):
         load = request.POST.__getitem__('load').lower()
         Load.objects.create(load=load)
         return Response(status.HTTP_201_CREATED)
+
+
+@api_view(['GET', 'POST'])
+def ListAndCreateUserLoad(request, user):
+
+    user = User.objects.get(username=user)
+    # Clean "middle man model"
+    TrackedLoads.objects.all().delete()
+    
+    if request.method == 'GET'  :
+
+        # 
+        tracked_load_qs = UserLoadAssociation.objects.all().filter(user__id=user.id)
+        values = tracked_load_qs.values("load")
+
+        # Create a list with tracked Loads.
+        tracked_loads = []
+
+        # Register tracked Load objects.
+        for load in values:
+            load_id = load["load"]
+            load = Load.objects.get(pk=load_id)
+            tracked_loads.append(load)
+            tracked_untracked_loads = TrackedLoads.objects.create(load=load, isTracked=True)
+
+        # Register remaining Load only if not in tracked Load.
+        loads = Load.objects.all()
+        for load in loads:
+            if load not in tracked_loads:
+                print(load)
+                tracked_untracked_loads = TrackedLoads.objects.create(load=load, isTracked=False)
+
+    
+        for load in TrackedLoads.objects.all():
+           print(load.load, load.isTracked)
+
+        object = TrackedLoads.objects.all()
+        serializer = TrackedLoadsSerializer(object, many=True)
+
+        return Response(serializer.data)
+    
+    if request.method == "POST":
+        load = request.POST.__getitem__('load')
+        load = Load.objects.get(load=load)
+
+        c = UserLoadAssociation.objects.get(
+            user=user,
+        )
+        
+        isTracked = request.POST.__getitem__('isTracked')
+        if isTracked == "true":
+            c.load.add(load.id)
+        else:
+            c.load.remove(load.id)
+        
+        return HttpResponse("ok")

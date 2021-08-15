@@ -9,6 +9,7 @@ urlpatterns = [
     #path('<str:user>/kwh', views.KwhList.as_view()),
     path('<str:user>/kwh', views.ListAndCreateKwh),
     path('load', views.ListAndCreateLoad),
+    path('load/<str:user>', views.ListAndCreateUserLoad),
     path('', views.api_welcome_page),
 ]
 
