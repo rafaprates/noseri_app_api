@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from django.contrib.auth.models import User
-from .models import Load, Kwh
+from .models import Load, Kwh, TrackedLoads
 
 class KwhSerializer(serializers.ModelSerializer):
     user = serializers.ReadOnlyField(source='user.username')
@@ -19,6 +19,14 @@ class LoadSerializer(serializers.ModelSerializer):
         model = Load
         fields = ["load"]
 
+
+class TrackedLoadsSerializer(serializers.ModelSerializer):
+    load = serializers.CharField()
+    isTracked = serializers.BooleanField()
+
+    class Meta:
+        model = TrackedLoads
+        fields = ["load", "isTracked"]
 
 class ReaisSerializer(serializers.Serializer):
     load = serializers.CharField()

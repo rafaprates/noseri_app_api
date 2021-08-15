@@ -49,13 +49,17 @@ def por_dias_de_um_mes(querySet, month):
     Returns:
 
     """
+
     today = datetime.datetime.today()
     last_day_of_month = monthrange(today.year, month)[1]
     aggregated_values = []
+    print(aggregated_values)
     
     for day in range(1, last_day_of_month):
         qs = querySet.filter(
             timestamp__day=day
+        ).filter(
+            timestamp__month=month
         ).aggregate(
             Sum("kwh")
         )
@@ -139,14 +143,17 @@ def por_hora_de_um_dia(querySet, day):
         
     """
     today = datetime.datetime.today()
-    querySet = querySet.filter(timestamp__day=day)
+    #querySet = querySet.filter(timestamp__day=day)
 
     aggregated_values = []
+    total_kwh = 0;
     
     # Realizar a soma, a fim de obter o total consumido
     # em cada hora do dia. 
     for hour in range(0, 24):
         qs = querySet.filter(
+            timestamp__day=day
+        ).filter(
             timestamp__hour=hour
         ).aggregate(
              Sum("kwh")

@@ -35,15 +35,20 @@ class UserLoadAssociation(models.Model):
     user = models.OneToOneField(
         User, 
         on_delete=models.CASCADE, 
-        #default=None, 
-        #blank=False,
         parent_link=False,
-        #unique=True,
     )
     load = models.ManyToManyField(Load)
 
     def __str__(self):
         return f"Cargas monitoradas para o usuário {self.user}"
+
+
+class TrackedLoads(models.Model):
+    load = models.ForeignKey(Load, 
+        on_delete=models.CASCADE, 
+        #parent_link=False
+    )
+    isTracked = models.BooleanField()
 
  
 class KwhTotal(models.Model):
