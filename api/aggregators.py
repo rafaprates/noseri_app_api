@@ -81,7 +81,7 @@ def por_dias_de_uma_semana(querySet, week):
     Agrega os valores para cada dia de uma mês.
 
     Args: 
-        querySet: subconjunto de dados.
+        querySet: subconjunto de dados filtrado para um usuário.
         week: semana os dias a serem agregados.
 
     Returns:
@@ -90,16 +90,19 @@ def por_dias_de_uma_semana(querySet, week):
     """
 
     today = datetime.datetime.today()
-    text_weekdays = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sab"]
-    querySet = querySet.filter(timestamp__week=week)
-    week_day = int(weekday(today.year, today.month, today.day))
-    first_day_of_week = today.day - week_day - 1
-
+    text_weekdays = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sab", "Dom"]
     aggregated_values = []
+    
+    querySet = querySet.filter(timestamp__week=week)
 
-    i = -1
+    # Monday = 0 and Sunday = 6
+    week_day = int(weekday(today.year, today.month, today.day))
+
+    # Extrair o primeiro dia da semana
+    first_day_of_week = today.day - week_day
+
+    i = 0
     for day in range(first_day_of_week, first_day_of_week + 7):
-        i += 1
         qs = querySet.filter(
             timestamp__day=day
         ).aggregate(
@@ -114,21 +117,9 @@ def por_dias_de_uma_semana(querySet, week):
         if total_kwh.kwh_sum == None:
             total_kwh.kwh_sum = 0.0
         aggregated_values.append(total_kwh)
-
+        i += 1
     return aggregated_values
 
-
-def por_hora(querySet):
-    """
-    Agrega os valores por hora.
-
-    Args: 
-        querySet: subconjunto de dados do banco.
-    
-    Returns:
-        total_kwh_by_hour: lista com dicionário contendo,
-        para cad hora, o valor agregado para esta.
-    """
 
 
 def por_hora_de_um_dia(querySet, day):
@@ -152,7 +143,11 @@ def por_hora_de_um_dia(querySet, day):
     # em cada hora do dia. 
     for hour in range(0, 24):
         qs = querySet.filter(
-            timestamp__day=day
+            timestamp__year=today.year
+        ).filter(
+            timestamp__month=today.month
+        ).filter(
+            timestamp__day=today.day
         ).filter(
             timestamp__hour=hour
         ).aggregate(
@@ -178,37 +173,34 @@ def por_carga_em_um_mes(querySet):
     Returns:
         
     """
-    loads = Load.objects.all()[0:3]
+
+    today = datetime.datetime.today()
+    loads = Load.objects.all()
     totals_by_load = []
     for load in loads:
-        print(load)
         qs = querySet.filter(
+            timestamp__year=today.year
+        ).filter(
+            timestamp__month=today.month
+        ).filter(
             load__exact=load.id
         ).aggregate(
             Sum("kwh")
         )
 
-        print("\n\n qs", qs, "\n\n")
         total_by_load = Total_by_Load(load_name=load.load, kwh_sum=qs["kwh__sum"])
         totals_by_load.append(total_by_load)
         
     return totals_by_load
 
-def por_total_este_mes(querySet, month):
+def by_total_this_month(querySet):
 
-    print("######################################")
-    print("######################################")
-
+    today = datetime.datetime.today()
     qs = querySet.filter(
-        timestamp__month=month
+        timestamp__month=today.month
     ).aggregate(
         Sum("kwh")
     )
 
-    print("######################################")
-    print("######################################")
-    print("######################################")
-    print("######################################")
-    print(qs)
-    print()
-    return 
+    total_this_month = KwhTotal(kwh_sum=qs["kwh__sum"], data="aa")
+    return total_this_month

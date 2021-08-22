@@ -8,7 +8,6 @@ from django.http.response import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from api import serializers
 
-#from .filters import *
 from . import filters
 
 from rest_framework.views import APIView
@@ -46,10 +45,15 @@ def ListAndCreateKwh(request, user):
         querySet = Kwh.objects.all().filter(user=user.id)
 
         # Filtra apenas as cargas registradas para o usuário
-        foo = UserLoadAssociation.objects.all().filter(user=user.id)
+       
+        tracked_loads = UserLoadAssociation.objects.all().filter(user=user.id)
+        tracked_loads = tracked_loads.first().load.all()
+        all_loads = Load.objects.all()
 
-        if request.GET.__contains__("debug"):
-            pass
+        non_tracked_loads = all_loads.difference(tracked_loads)
+        
+        for i in non_tracked_loads:
+            querySet = querySet.exclude(load=i)
             
         # ---> Início dos filtros
         if request.GET.__contains__("load"):
@@ -88,8 +92,11 @@ def ListAndCreateKwh(request, user):
                 aggregated_values = aggregators.por_dia_e_mes_e_ano(querySet, ti, tf)
 
             if aggregator == "by_total_this_month":
-                month = today.month
-                aggregated_values = aggregators.por_total_este_mes(querySet, month)
+                print("by_total_this_month")
+                aggregated_values = aggregators.by_total_this_month(querySet)
+                serializer = TotalKwhSerializer(aggregated_values)
+                print(serializer.data)
+                return Response(serializer.data)
 
             if aggregator == "total_this_month":
                 pass
@@ -155,6 +162,7 @@ def ListAndCreateKwh(request, user):
         return Response(status.HTTP_201_CREATED)
 
 
+
 @api_view(['GET', 'POST'])
 def ListAndCreateLoad(request):
 
@@ -170,6 +178,7 @@ def ListAndCreateLoad(request):
         return Response(status.HTTP_201_CREATED)
 
 
+
 @api_view(['GET', 'POST'])
 def ListAndCreateUserLoad(request, user):
 
@@ -178,7 +187,6 @@ def ListAndCreateUserLoad(request, user):
     TrackedLoads.objects.all().delete()
     
     if request.method == 'GET'  :
-
         # 
         tracked_load_qs = UserLoadAssociation.objects.all().filter(user__id=user.id)
         values = tracked_load_qs.values("load")
@@ -210,4 +218,18 @@ def ListAndCreateUserLoad(request, user):
         return Response(serializer.data)
     
     if request.method == "POST":
-        pass
+        serializer = TrackedLoadsSerializer(request.data)
+        load = serializer.data['load']
+        isTracked = serializer.data['isTracked']
+        load = Load.objects.get(load=load)
+
+        c = UserLoadAssociation.objects.get(
+            user=user,
+        )
+
+        if isTracked:
+            c.load.add(load.id)
+        else:
+            c.load.remove(load.id)
+        
+        return HttpResponse("ok")
